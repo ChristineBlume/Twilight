@@ -19,33 +19,32 @@ if(!require(stringr)) install.packages("stringr")
 pacman::p_load(ggplot2, stringr)
 
 #----- load files
-data <- read.csv(paste(p,d, sep = "/"), header = T, stringsAsFactors = F, sep = ",") ## ignore warning messages
+data_all <- read.csv(paste(p,d, sep = "/"), header = T, stringsAsFactors = F, sep = ";") ## ignore warning messages
+
+# remove incomplete rows, i.e. rows with missing data (colour vision test is the last test, if it is not complete,
+# the screening is not complete)
+pb_na <- c(which(data_all$color_blind_test_complete != 2)) # 2 == complete
+data <- data_all[-c(pb_na),]
 
 # data reduction
-pb_info <- data[,c(6,9:17, 20, 23:25, 27:29, 33, 35, 37, 39, 42)]
-psqi <- data[,c(45:70)]
-mctq <- data[,c(72:109)]
-meq <- data[,c(111:129)]
-oldfield <- data[,c(132:147)]
-bsi <- data[,c(149:201)]
+pb_info <- data[,c(3,9,12:16,18,21, 24:27, 30, 31, 34:48)]
+psqi <- data[,c(50:75)]
+mctq <- data[,c(77:114)]
+bsi <- data[,c(116:168)]
+colourvis <- data[,c(170:181)]
 
-# remove incomplete rows, i.e. rows with missing data
-pb_na <- c(which(data$psqi_complete == 0), which(data$anamnesefragebogen_complete == 0), which(data$mctq_complete == 0), 
-           which(data$meq_complete == 0), which(data$oldfield_complete == 0), which(data$bsi_complete == 0))
-pb_na <- unique(pb_na)
 
+### -----------------------------------------------------------------------------------------------------------------------------
 ### BMI calculation
 pb_info$BMI <- round((pb_info$vp_weight/(pb_info$vp_height/100)^2), digits = 1)
 
-pb_info <- pb_info[,-c(4,5)]
-pb_info <- pb_info[-c(pb_na),]
 
+### -----------------------------------------------------------------------------------------------------------------------------
 ### ---- Calculate components of the PSQI and determine sum score
 #component 1 (Sleep Quality)
 # no calculation necessary, corresponds to psqi$psqi_sleepqual  
 
 #component 2 (Sleep Latency)
-psqi <- psqi[-c(pb_na),]
 psqi$psqi_sleeptime[psqi$psqi_sleeptime<=15] <- 0
 psqi$psqi_sleeptime[psqi$psqi_sleeptime>=16 & psqi$psqi_sleeptime<=30] <- 1
 psqi$psqi_sleeptime[psqi$psqi_sleeptime>31 & psqi$psqi_sleeptime<=60] <- 2
@@ -99,24 +98,9 @@ pb_info$psqi_sum <- psqi$psqi_sleepqual + psqi$psqi_sleeplatency + psqi$psqi_sle
 
 rm(psqi_sleephrs, psq_sleephrs_hrs, psq_sleephrs_mins, psqi_sleepdur, tib)
 
-### ---- Oldfield
-oldfield <- oldfield[-c(pb_na),]
-oldf_R <- rowSums(oldfield[1:10])
-oldf_L <- 10-rowSums(oldfield[1:10])
-pb_info$oldf_laterality <- ((oldf_R-oldf_L)/(oldf_R+oldf_L))*100
-
-rm(oldf_L, oldf_R)
-
-### ---- MEQ (definite morning and evening types are >30 & <70)
-meq <- meq[-c(pb_na),]
-
-pb_info$meq_sum <- meq$meq_getuptime + meq$meq_bedtime + meq$meq_alarmdependence + meq$meq_getupeasy + meq$meq_sleeplatency + # sleeplatency = sleep inertia (wrong variable name)
-  + meq$meq_hunger + meq$meq_feel + meq$meq_bedtime_fd +meq$meq_physfit + meq$meq_timetired + meq$meq_metalfit + meq$meq_tired11pm + meq$meq_bedlate +
-  meq$meq_nightshift + meq$meq_physwork + meq$meq_physfit2 + meq$meq_mentfit2 + meq$meq_feelbest + meq$meq_mornevetype
-
+### -----------------------------------------------------------------------------------------------------------------------------
 ### ---- BSI (calculate subscores and global scores)
 bsi$gender <- data$vp_gender
-bsi <- bsi[-c(pb_na),]
 
 bsi_somatisierung <- rowMeans(data.frame(bsi$bsi_q2, bsi$bsi_q7, bsi$bsi_q23, bsi$bsi_q29, bsi$bsi_q30, bsi$bsi_q33, bsi$bsi_q37))
 bsi_somatisierung2 <- rowSums(data.frame(bsi$bsi_q2>0, bsi$bsi_q7>0, bsi$bsi_q23>0, bsi$bsi_q29>0, bsi$bsi_q30>0, bsi$bsi_q33>0, bsi$bsi_q37>0))
@@ -166,9 +150,8 @@ PST = bsi_somatisierung2 + bsi_zwanghaftigkeit2 + bsi_unsicherheit2 + bsi_depres
 PSDI = GS/PST
 
 
+### -----------------------------------------------------------------------------------------------------------------------------
 ### ---- MCTQ (calculate chronotype)
-mctq <- mctq[-c(pb_na),]
-
 SPrep_f <- as.POSIXct(mctq$mctq_sleeptime_fd, format = "%H:%M") # bereit zum Einschlafen
 SLat_f <- mctq$mctq_fallasleepmin_fd # sleep latency
 SPrep_w <- as.POSIXct(mctq$mctq_sleeptime_wd, format = "%H:%M")
@@ -203,36 +186,15 @@ for (i in 1:length(SO_w)){
   }
 }
 
+pb_info$mctq_SDur_f <- SD_f
+pb_info$mctq_SDur_w <- SD_w
+
 pb_info$alarm <- mctq$mctq_alarm_fd
 
 ## Evaluation
 # writes "ok" if a score is within the inclusion criteria and "!" if it is not
 
-# Acoustic Sensitivity
-pb_info$sensitivitysleep <- NA
-for (i in 1:nrow(pb_info)){
-  if (is.na(pb_info$vp_sensitivitysleep[i])==F){
-    if (pb_info$vp_sensitivitysleep[i] >=2){
-      pb_info$sensitivitysleep[i] <- "!"
-    }else{
-      pb_info$sensitivitysleep[i] <- "ok"
-    }
-  }
-}
-
-# Sleep with Stim
-pb_info$sleepwstim <- NA
-  for (i in 1:nrow(pb_info)){
-    if (is.na(pb_info$vp_sleepwstim[i])==F){
-      if (pb_info$vp_sleepwstim[i] >=3){
-        pb_info$sleepwstim[i] <- "!"
-      }else{
-        pb_info$sleepwstim[i] <- "ok"
-      }
-    }
-  }
-
-# BSI (relies on T values for adults (m,f separately); sums equalling T-values >=60 are defined as "clinically relevant" according to the BSI manual)
+# BSI (relies on T values for adults (m,f separately); sums equaling T-values >=60 are defined as "clinically relevant" according to the BSI manual)
 pb_info$bsi_GS <- GS
 for (i in 1:nrow(pb_info)){
   if (pb_info$bsi_GS[i] >=33){
@@ -260,23 +222,6 @@ for (i in 1:nrow(bsi_scales)){
   }
 }
 
-# MEQ (exclude extreme chronotypes, i.e. definite morning and evening types)
-for (i in 1:nrow(pb_info)){
-  if (pb_info$meq_sum[i] <31 | pb_info$meq_sum[i] >69){
-    pb_info$meq_state[i] <- "!"
-  }else{
-    pb_info$meq_state[i] <- "ok"
-  }
-}
-
-# Oldfield (exclude if laterality score is <30% for right-handedness)
-for (i in 1:nrow(pb_info)){
-  if (pb_info$oldf_laterality[i] <=30){
-    pb_info$oldf_state[i] <- "!"
-  }else{
-    pb_info$oldf_state[i] <- "ok"
-  }
-}
 
 # BMI (exclude if BMI < 17.5 or >25)
 for (i in 1:nrow(pb_info)){
@@ -312,5 +257,3 @@ pb_info$vp_firstname2 <- pb_info$vp_firstname
 rownames(pb_info) <- NULL
 pb_info$index <- seq(1,nrow(pb_info))
 
-# Exclude excluded participants (cleans up table)
-pb_info2 <- pb_info[-c(8, 10, 17, 18, 19, 21:23, 27, 28),]
