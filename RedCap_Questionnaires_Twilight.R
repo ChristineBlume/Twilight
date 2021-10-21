@@ -191,6 +191,36 @@ pb_info$mctq_SDur_w <- SD_w
 
 pb_info$alarm <- mctq$mctq_alarm_fd
 
+### -----------------------------------------------------------------------------------------------------------------------------
+### ---- Colour Vision
+# replace correct items by 0
+colourvis$color_item1a[colourvis$color_item1a == 7] <- 0
+colourvis$color_item1a[colourvis$color_item1a != 0] <- 1
+colourvis$color_item2a[colourvis$color_item2a == 6] <- 0
+colourvis$color_item2a[colourvis$color_item2a != 0] <- 1
+colourvis$color_item3a[colourvis$color_item3a == 26] <- 0
+colourvis$color_item3a[colourvis$color_item3a != 0] <- 1
+colourvis$color_item4a[colourvis$color_item4a == 15] <- 0
+colourvis$color_item4a[colourvis$color_item4a != 0] <- 1
+colourvis$color_item5a[colourvis$color_item5a == 6] <- 0
+colourvis$color_item5a[colourvis$color_item5a != 0] <- 1
+colourvis$color_item6a[colourvis$color_item6a == 73] <- 0
+colourvis$color_item6a[colourvis$color_item6a != 0] <- 1
+colourvis$color_item7a[colourvis$color_item7a == 5] <- 0
+colourvis$color_item7a[colourvis$color_item7a != 0] <- 1
+colourvis$color_item8a[colourvis$color_item8a == 16] <- 0
+colourvis$color_item8a[colourvis$color_item8a != 0] <- 1
+colourvis$color_item9a[colourvis$color_item9a == 45] <- 0
+colourvis$color_item9a[colourvis$color_item9a != 0] <- 1
+colourvis$color_item10a[colourvis$color_item10a == 12] <- 0
+colourvis$color_item10a[colourvis$color_item10a != 0] <- 1
+colourvis$color_item11a[colourvis$color_item11a == 29] <- 0
+colourvis$color_item11a[colourvis$color_item11a != 0] <- 1
+colourvis$color_item12a[colourvis$color_item12a == 8] <- 0
+colourvis$color_item12a[colourvis$color_item12a != 0] <- 1
+
+pb_info$colourvis <- rowSums(colourvis)
+
 ## Evaluation
 # writes "ok" if a score is within the inclusion criteria and "!" if it is not
 
@@ -241,13 +271,29 @@ for (i in 1:nrow(pb_info)){
   }
 }
 
+# colourvis
+for (i in 1:nrow(pb_info)){
+  if (pb_info$colourvis[i] >2){ # they should have at least 10/12 correct, i.e. 83%
+    pb_info$colourvis_state[i] <- "!"
+  }else{
+    pb_info$colourvis_state[i] <- "ok"
+  }
+}
+
 # Overall state (checks if any of the exclusion criteria is met including smoking, age, drugs, etc.)
 pb_info$vp_pregnancy[is.na(pb_info$vp_pregnancy)] <- 0
+pb_info$vp_menstrproblems_sleep[is.na(pb_info$vp_menstrproblems_sleep)] <- 0
 for (i in 1:nrow(pb_info)){
-  if (pb_info$vp_age[i] >30 | pb_info$vp_smoke[i] == 1 | pb_info$vp_drugs[i] == 1 | pb_info$vp_neuro[i] == 1 | pb_info$vp_braininj[i] == 1 | pb_info$vp_psycho[i] == 1 |
-      pb_info$vp_pregnancy[i] == 1 | pb_info$vp_hearingprobs[i] == 1 | pb_info$vp_shiftwork[i] == 1 | pb_info$vp_travel[i] == 1 |
-      pb_info$bsi_GS_clin[i] == "!" | pb_info$bsi_scales_clin[i] == "!" | pb_info$meq_state[i] == "!" | pb_info$oldf_state[i] == "!" |
-      pb_info$BMI_state[i] == "!" | pb_info$psqi_state[i] == "!"){
+  if (pb_info$vp_age[i] >35 | pb_info$vp_smoke[i] == 1 | pb_info$vp_drugs[i] == 1 | pb_info$vp_neuro[i] == 1 | pb_info$vp_braininj[i] == 1 | pb_info$vp_psycho[i] == 1 |
+      pb_info$vp_pregnancy[i] == 1 | pb_info$vp_shiftwork[i] == 1 | pb_info$vp_travel[i] == 1 | pb_info$covid_certificate[i] == 0 | pb_info$vp_photoepi[i] == 1 |
+      pb_info$vp_filterglasses[i] == 1 | # blue filtering glasses
+      pb_info$vp_menstrproblems_sleep[i] > 0 | #menstr problems affecting sleep, 0 = not at all
+      pb_info$mctq_ChronoT[i] < (as.POSIXct("03:00", format = "%H:%M")+24*60*60)| 
+      pb_info$mctq_ChronoT[i] > (as.POSIXct("05:00", format = "%H:%M")+24*60*60)| # chronotype, needs to add a day to make date match
+      pb_info$mctq_SDur_f[i] < 7 | pb_info$mctq_SDur_f[i] > 10 |  pb_info$mctq_SDur_w[i] < 7 | pb_info$mctq_SDur_w[i] > 9 | # sleep duration
+      pb_info$colourvis_state[i] == "!" | # colour vision
+      pb_info$bsi_GS_clin[i] == "!" | pb_info$bsi_scales_clin[i] == "!" | # BSI
+      pb_info$BMI_state[i] == "!" | pb_info$psqi_state[i] == "!"){ # BMI, PSQI
     pb_info$OVERALL_state[i] <- "!"
   }else{
     pb_info$OVERALL_state[i] <- "ok"
@@ -257,3 +303,15 @@ pb_info$vp_firstname2 <- pb_info$vp_firstname
 rownames(pb_info) <- NULL
 pb_info$index <- seq(1,nrow(pb_info))
 
+## Matrix for inspection
+CHECK <- data.frame(pb_info$index, pb_info$vp_code_1, pb_info$vp_firstname2, pb_info$vp_age, 
+                    pb_info$vp_smoke, pb_info$vp_drugs, pb_info$vp_neuro, pb_info$vp_braininj, 
+                    pb_info$vp_psycho, pb_info$vp_pregnancy, pb_info$vp_shiftwork, pb_info$vp_travel, pb_info$covid_certificate, pb_info$vp_photoepi,
+                    pb_info$vp_filterglasses, # blue filtering glasses
+                    pb_info$vp_menstrproblems_sleep, #menstr problems affecting sleep
+                    pb_info$mctq_ChronoT, pb_info$mctq_ChronoT, # chronotype
+                    pb_info$mctq_SDur_f, pb_info$mctq_SDur_w, # sleep duration
+                    pb_info$colourvis_state, # colour vision
+                    pb_info$bsi_GS_clin, pb_info$bsi_scales_clin, # BSI
+                    pb_info$BMI_state, pb_info$psqi_state, # BMI, PSQI
+                    pb_info$OVERALL_state)
