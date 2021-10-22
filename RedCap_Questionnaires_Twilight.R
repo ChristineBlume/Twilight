@@ -281,6 +281,9 @@ for (i in 1:nrow(pb_info)){
 }
 
 # Overall state (checks if any of the exclusion criteria is met including smoking, age, drugs, etc.)
+pb_info$covid_certificate[1] <- 1
+
+
 pb_info$vp_pregnancy[is.na(pb_info$vp_pregnancy)] <- 0
 pb_info$vp_menstrproblems_sleep[is.na(pb_info$vp_menstrproblems_sleep)] <- 0
 for (i in 1:nrow(pb_info)){
@@ -304,6 +307,11 @@ rownames(pb_info) <- NULL
 pb_info$index <- seq(1,nrow(pb_info))
 
 ## Matrix for inspection
+pb_info$vp_travelhome[pb_info$vp_travelhome == 0] <- "zu Fuss"
+pb_info$vp_travelhome[pb_info$vp_travelhome == 1] <- "Auto"
+pb_info$vp_travelhome[pb_info$vp_travelhome == 2] <- "Velo"
+pb_info$vp_travelhome[pb_info$vp_travelhome == 3] <- "ÖV"
+pb_info$vp_travelhome[pb_info$vp_travelhome == 4] <- "Anderes"
 CHECK <- data.frame(pb_info$index, pb_info$vp_code_1, pb_info$vp_firstname2, pb_info$vp_age, 
                     pb_info$vp_smoke, pb_info$vp_drugs, pb_info$vp_neuro, pb_info$vp_braininj, 
                     pb_info$vp_psycho, pb_info$vp_pregnancy, pb_info$vp_shiftwork, pb_info$vp_travel, pb_info$covid_certificate, pb_info$vp_photoepi,
@@ -314,4 +322,7 @@ CHECK <- data.frame(pb_info$index, pb_info$vp_code_1, pb_info$vp_firstname2, pb_
                     pb_info$colourvis_state, # colour vision
                     pb_info$bsi_GS_clin, pb_info$bsi_scales_clin, # BSI
                     pb_info$BMI_state, pb_info$psqi_state, # BMI, PSQI
+                    pb_info$vp_allergies,
+                    pb_info$vp_travelhome,
+                    pb_info$vp_traveltime,
                     pb_info$OVERALL_state)
