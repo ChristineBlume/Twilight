@@ -13,7 +13,6 @@ Twilight_Screening <- function(p, d){
   
   #----- check if pacman is installed - if not install it
   if(!require(pacman)) install.packages("pacman")
-  if(!require(ggplot2)) install.packages("ggplot2")
   if(!require(stringr)) install.packages("stringr")
   
   #----- use pacman function p_load to check all packages that you are using in this script
@@ -323,9 +322,10 @@ Twilight_Screening <- function(p, d){
                       pb_info$colourvis_state, # colour vision
                       pb_info$bsi_GS_clin, pb_info$bsi_scales_clin, # BSI
                       pb_info$BMI_state, pb_info$psqi_state, # BMI, PSQI
-                      pb_info$vp_allergies,
+                      pb_info$vp_allergies2,
                       pb_info$vp_travelhome,
                       pb_info$vp_traveltime,
                       pb_info$OVERALL_state)
+  return(CHECK)
+
 }
-return(CHECK)
