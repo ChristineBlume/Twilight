@@ -3,4 +3,4 @@
 
 source("C:/Users/chris/Documents/GitHub/Twilight/RedCap_Questionnaires_Twilight_fun.R")
 CHECK <-  Twilight_Screening(p = "C:/Users/chris/switchdrive/Twilight-Studie/Screening/REDCap_Exports",
-                             d = "BLUMETwilightScreeni_DATA_2021-10-18_2143.csv") # adapt paths
+                             d = "BLUMETwilightScreeni_DATA_2021-10-28_1206.csv") # adapt paths

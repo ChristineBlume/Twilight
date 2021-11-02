@@ -7,7 +7,7 @@ Twilight_Screening <- function(p, d){
   
   # ## --- set here the path to the data (p) and the name of the file you have downloaded (d)
   # p <- "C:/Users/chris/switchdrive/Twilight-Studie/Screening/REDCap_Exports"
-  # d <- "BLUMETwilightScreeni_DATA_2021-10-18_2143.csv"
+  # d <- "BLUMETwilightScreeni_DATA_2021-10-26_1408.csv"
   
   setwd(p)
   
@@ -24,7 +24,12 @@ Twilight_Screening <- function(p, d){
   # remove incomplete rows, i.e. rows with missing data (colour vision test is the last test, if it is not complete,
   # the screening is not complete)
   pb_na <- c(which(data_all$color_blind_test_complete != 2)) # 2 == complete
-  data <- data_all[-c(pb_na),]
+  if(length(pb_na) != 0){
+    data <- data_all[-c(pb_na),]
+  }else{
+    data <- data_all
+  }
+  rm(data_all)
   
   # data reduction
   pb_info <- data[,c(3,9,12:16,18,21, 24:27, 30, 31, 34:48)]
@@ -71,6 +76,7 @@ Twilight_Screening <- function(p, d){
   getuptime <- as.POSIXct(psqi$psqi_getuptime, format = "%H:%M")+24*60*60
   tib <- round(as.numeric(getuptime-bedtime), digits = 2)
   rm(bedtime, getuptime)
+  pb_info$psqi_sleepdur <- psqi_sleepdur
   
   psqi$psqi_SEFF = (psqi_sleepdur/tib)*100
   psqi$psqi_SEFF[psqi$psqi_SEFF<65] <- 3
@@ -291,9 +297,9 @@ Twilight_Screening <- function(p, d){
         pb_info$vp_pregnancy[i] == 1 | pb_info$vp_shiftwork[i] == 1 | pb_info$vp_travel[i] == 1 | pb_info$covid_certificate[i] == 0 | pb_info$vp_photoepi[i] == 1 |
         pb_info$vp_filterglasses[i] == 1 | # blue filtering glasses
         pb_info$vp_menstrproblems_sleep[i] > 0 | #menstr problems affecting sleep, 0 = not at all
-        pb_info$mctq_ChronoT[i] < (as.POSIXct("03:00", format = "%H:%M")+24*60*60)| 
-        pb_info$mctq_ChronoT[i] > (as.POSIXct("05:00", format = "%H:%M")+24*60*60)| # chronotype, needs to add a day to make date match
-        pb_info$mctq_SDur_f[i] < 7 | pb_info$mctq_SDur_f[i] > 10 |  pb_info$mctq_SDur_w[i] < 7 | pb_info$mctq_SDur_w[i] > 9 | # sleep duration
+        pb_info$mctq_ChronoT[i] <= (as.POSIXct("02:00", format = "%H:%M")+24*60*60)| 
+        pb_info$mctq_ChronoT[i] >= (as.POSIXct("07:00", format = "%H:%M")+24*60*60)| # chronotype, needs to add a day to make date match
+        pb_info$psqi_sleepdur[i] < 7 | pb_info$psqi_sleepdur[i] > 10 | # sleep duration
         pb_info$colourvis_state[i] == "!" | # colour vision
         pb_info$bsi_GS_clin[i] == "!" | pb_info$bsi_scales_clin[i] == "!" | # BSI
         pb_info$BMI_state[i] == "!" | pb_info$psqi_state[i] == "!"){ # BMI, PSQI
@@ -310,19 +316,19 @@ Twilight_Screening <- function(p, d){
   pb_info$vp_travelhome[pb_info$vp_travelhome == 0] <- "zu Fuss"
   pb_info$vp_travelhome[pb_info$vp_travelhome == 1] <- "Auto"
   pb_info$vp_travelhome[pb_info$vp_travelhome == 2] <- "Velo"
-  pb_info$vp_travelhome[pb_info$vp_travelhome == 3] <- "ÖV"
+  pb_info$vp_travelhome[pb_info$vp_travelhome == 3] <- "OEV"
   pb_info$vp_travelhome[pb_info$vp_travelhome == 4] <- "Anderes"
   CHECK <- data.frame(pb_info$index, pb_info$vp_code_1, pb_info$vp_firstname2, pb_info$vp_age, 
                       pb_info$vp_smoke, pb_info$vp_drugs, pb_info$vp_neuro, pb_info$vp_braininj, 
                       pb_info$vp_psycho, pb_info$vp_pregnancy, pb_info$vp_shiftwork, pb_info$vp_travel, pb_info$covid_certificate, pb_info$vp_photoepi,
                       pb_info$vp_filterglasses, # blue filtering glasses
                       pb_info$vp_menstrproblems_sleep, #menstr problems affecting sleep
-                      pb_info$mctq_ChronoT, pb_info$mctq_ChronoT, # chronotype
-                      pb_info$mctq_SDur_f, pb_info$mctq_SDur_w, # sleep duration
+                      pb_info$mctq_ChronoT, # chronotype
+                      pb_info$psqi_sleepdur, # sleep duration
                       pb_info$colourvis_state, # colour vision
                       pb_info$bsi_GS_clin, pb_info$bsi_scales_clin, # BSI
                       pb_info$BMI_state, pb_info$psqi_state, # BMI, PSQI
-                      pb_info$vp_allergies2,
+                      pb_info$vp_allergies,
                       pb_info$vp_travelhome,
                       pb_info$vp_traveltime,
                       pb_info$OVERALL_state)
