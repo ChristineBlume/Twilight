@@ -318,6 +318,8 @@ Twilight_Screening <- function(p, d){
   pb_info$vp_travelhome[pb_info$vp_travelhome == 2] <- "Velo"
   pb_info$vp_travelhome[pb_info$vp_travelhome == 3] <- "OEV"
   pb_info$vp_travelhome[pb_info$vp_travelhome == 4] <- "Anderes"
+  pb_info$colourvis_per <- ((12-pb_info$colourvis[i])/12)*100 # colour vision percentage
+  
   CHECK <- data.frame(pb_info$index, pb_info$vp_code_1, pb_info$vp_firstname2, pb_info$vp_age, 
                       pb_info$vp_smoke, pb_info$vp_drugs, pb_info$vp_neuro, pb_info$vp_braininj, 
                       pb_info$vp_psycho, pb_info$vp_pregnancy, pb_info$vp_shiftwork, pb_info$vp_travel, pb_info$covid_certificate, pb_info$vp_photoepi,
@@ -326,7 +328,7 @@ Twilight_Screening <- function(p, d){
                       pb_info$mctq_ChronoT, # chronotype
                       pb_info$psqi_sleepdur, # sleep duration
                       pb_info$colourvis_state, # colour vision
-                      pb_info$colourvis[i], # colour vision percentage
+                      pb_info$colourvis_per,
                       pb_info$bsi_GS_clin, pb_info$bsi_scales_clin, # BSI
                       pb_info$BMI_state, pb_info$psqi_state, # BMI, PSQI
                       pb_info$vp_allergies,
