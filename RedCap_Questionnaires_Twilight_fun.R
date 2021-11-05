@@ -326,6 +326,7 @@ Twilight_Screening <- function(p, d){
                       pb_info$mctq_ChronoT, # chronotype
                       pb_info$psqi_sleepdur, # sleep duration
                       pb_info$colourvis_state, # colour vision
+                      pb_info$colourvis[i], # colour vision percentage
                       pb_info$bsi_GS_clin, pb_info$bsi_scales_clin, # BSI
                       pb_info$BMI_state, pb_info$psqi_state, # BMI, PSQI
                       pb_info$vp_allergies,
