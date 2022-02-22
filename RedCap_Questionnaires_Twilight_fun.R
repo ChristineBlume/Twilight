@@ -19,7 +19,7 @@ Twilight_Screening <- function(p, d){
   pacman::p_load(ggplot2, stringr)
   
   #----- load files
-  data_all <- read.csv(paste(p,d, sep = "/"), header = T, stringsAsFactors = F, sep = ",") ## ignore warning messages
+  data_all <- read.csv(paste(p,d, sep = "/"), header = T, stringsAsFactors = F, sep = ";") ## ignore warning messages
   
   # remove incomplete rows, i.e. rows with missing data (colour vision test is the last test, if it is not complete,
   # the screening is not complete)
