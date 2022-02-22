@@ -19,7 +19,7 @@ Twilight_Screening <- function(p, d){
   pacman::p_load(ggplot2, stringr)
   
   #----- load files
-  data_all <- read.csv(paste(p,d, sep = "/"), header = T, stringsAsFactors = F, sep = ";") ## ignore warning messages
+  data_all <- read.csv(paste(p,d, sep = "/"), header = T, stringsAsFactors = F, sep = ",") ## ignore warning messages
   
   # remove incomplete rows, i.e. rows with missing data (colour vision test is the last test, if it is not complete,
   # the screening is not complete)
@@ -318,7 +318,7 @@ Twilight_Screening <- function(p, d){
   pb_info$vp_travelhome[pb_info$vp_travelhome == 2] <- "Velo"
   pb_info$vp_travelhome[pb_info$vp_travelhome == 3] <- "OEV"
   pb_info$vp_travelhome[pb_info$vp_travelhome == 4] <- "Anderes"
-  pb_info$colourvis_per <- ((12-pb_info$colourvis[i])/12)*100 # colour vision percentage
+  pb_info$colourvis_per <- ((12-pb_info$colourvis)/12)*100 # colour vision percentage
   
   CHECK <- data.frame(pb_info$index, pb_info$vp_code_1, pb_info$vp_firstname2, pb_info$vp_age, 
                       pb_info$vp_smoke, pb_info$vp_drugs, pb_info$vp_neuro, pb_info$vp_braininj, 

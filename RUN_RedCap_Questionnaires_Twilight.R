@@ -2,5 +2,5 @@
 # save function "RedCap_Questionnaires_Twilight_fun.R somewhere
 
 source("C:/Users/chris/Documents/GitHub/Twilight/RedCap_Questionnaires_Twilight_fun.R")
-CHECK <-  Twilight_Screening(p = "C:/Users/chris/switchdrive/Twilight-Studie/Screening/REDCap_Exports",
-                             d = "BLUMETwilightScreeni_DATA_2021-10-28_1206.csv") # adapt paths
+CHECK <-  Twilight_Screening(p = "C:/Users/chris/switchdrive/Institution/Twilight-Studie_NEU/Redcap/REDCap Exports",
+                             d = "BLUMETwilightScreeni_DATA_2022-02-22_1233.csv") # adapt paths
